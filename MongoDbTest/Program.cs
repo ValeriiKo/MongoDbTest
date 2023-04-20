@@ -1,23 +1,18 @@
-﻿using MongoDB.Driver;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDbTest;
 
-const string connectionUri = "mongodb+srv://valeriikozhevnikov:l6AVsdQAXlfOkK6o@cluster0.minnz6g.mongodb.net/?retryWrites=true&w=majority";
+var mongoURL = new MongoUrl("mongodb+srv://valeriikozhevnikov:l6AVsdQAXlfOkK6o@cluster0.minnz6g.mongodb.net/?retryWrites=true&w=majority");
+var client = new MongoClient(mongoURL);
 
-var settings = MongoClientSettings.FromConnectionString(connectionUri);
+var dbList = client.ListDatabases().ToList();
 
-// Set the ServerApi field of the settings object to Stable API version 1
-settings.ServerApi = new ServerApi(ServerApiVersion.V1);
-
-// Create a new client and connect to the server
-var client = new MongoClient(settings);
-
-// Send a ping to confirm a successful connection
-try
+Console.WriteLine("The list of databases on this server is: ");
+foreach (var db in dbList)
 {
-    var result = client.GetDatabase("admin").RunCommand<BsonDocument>(new BsonDocument("ping", 1));
-    Console.WriteLine("Pinged your deployment. You successfully connected to MongoDB!");
+    Console.WriteLine(db);
 }
-catch (Exception ex)
-{
-    Console.WriteLine(ex);
-}
+var collections = client.GetDatabase("sample_analytics");
+var airnb = collections.GetCollection<Account>("accounts").AsQueryable<Account>().ToList();
+Console.WriteLine("\n\nGet data from sample_analytics.accounts collection:");
+Console.WriteLine("AccountId: " + airnb.FirstOrDefault().account_id);
